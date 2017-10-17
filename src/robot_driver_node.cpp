@@ -72,7 +72,7 @@ int main(int argc, char **argv)
     serial_.set_option(boost::asio::serial_port_base::baud_rate(baud_rate));
 
     int runs =0;
-    ROS_INFO("about to recieve");
+    ROS_INFO("about to receive");
 
     while (ros::ok())
     {
@@ -90,7 +90,7 @@ int main(int argc, char **argv)
       io.reset();
       //boost::asio::write(serial_,  boost::asio::buffer(&out[0], 5));
 
-      ROS_INFO("recieved %d",data_available);
+      ROS_INFO("received %d",data_available);
       data_available = 0;
 
       ros::spinOnce();
