@@ -14,11 +14,8 @@
 //checksum
 
 
-
-void read_callback(bool& data_available, boost::asio::deadline_timer& timeout, const boost::system::error_code& error, std::size_t bytes_transferred)
-{
-  if (error || !bytes_transferred)
-  {
+void read_callback(bool& data_available, boost::asio::deadline_timer& timeout, const boost::system::error_code& error, std::size_t bytes_transferred){
+  if (error || !bytes_transferred) {
     // No data was read!
     data_available = false;
     return;
@@ -28,10 +25,8 @@ void read_callback(bool& data_available, boost::asio::deadline_timer& timeout, c
   data_available = true;
 }
 
-void wait_callback(boost::asio::serial_port& ser_port, const boost::system::error_code& error)
-{
-  if (error)
-  {
+void wait_callback(boost::asio::serial_port& ser_port, const boost::system::error_code& error){
+  if (error){
     // Data was read and this timeout was canceled
     return;
   }
@@ -39,9 +34,37 @@ void wait_callback(boost::asio::serial_port& ser_port, const boost::system::erro
   ser_port.cancel();  // will cause read_callback to fire with an error
 }
 
-
-int main(int argc, char **argv)
+union Output
 {
+    int32_t full_data;     // occupies 4 bytes
+    uint8_t bytes[4];     // occupies 4 byte
+  };  
+
+  void send_UART_msg(boost::asio::serial_port &port,int data,uint8_t system_ID){
+    Output out_data;
+    out_data.full_data=data;
+
+    uint8_t startByte = 0xFA;
+
+    boost::array<uint8_t, 7> packet;
+    packet[0] = startByte;
+    packet[1] = system_ID;
+    for(int i=0; i<4;i++){
+      packet[i+2] = out_data.bytes[i];
+    }
+    uint8_t checksum=0x00;
+  for(int i=0; i<6;i++){//all the important bytes
+    checksum += packet[i];
+  }
+  packet[6] = checksum;
+
+  boost::asio::write(port,  boost::asio::buffer(&packet[0], 7));
+  ROS_INFO("%02X:%02X:%02X:%02X:%02X:%02X:%02X",packet[0],packet[1],
+    packet[2],packet[3],packet[4],packet[5],packet[6]);
+
+}
+
+int main(int argc, char **argv){
   ros::init(argc, argv, "robot_driver_node");
   ros::NodeHandle n;
   std::string port;
@@ -58,25 +81,15 @@ int main(int argc, char **argv)
 
   unsigned char  my_buffer[1];
   bool data_available = false;
-  boost::array<uint8_t, 5> out;
 
-  out[0]='a';
-  out[1]='b';
-  out[2]='c';
-  out[3]='d';
-  out[4]='\n';
-
-  try
-  {
+  try{
     boost::asio::serial_port serial_(io,port); // UART port for the Cortex
     serial_.set_option(boost::asio::serial_port_base::baud_rate(baud_rate));
 
-    int runs =0;
     ROS_INFO("about to receive");
+    send_UART_msg(serial_,1,0x01);
 
-    while (ros::ok())
-    {
-      runs ++;
+    while (ros::ok()){
      //ros::Time::now();
       serial_.async_read_some(boost::asio::buffer(my_buffer),
         boost::bind(&read_callback, boost::ref(data_available), boost::ref(timeout),
@@ -88,9 +101,7 @@ int main(int argc, char **argv)
 
       io.run();
       io.reset();
-      //boost::asio::write(serial_,  boost::asio::buffer(&out[0], 5));
-
-      ROS_INFO("received %d",data_available);
+      //ROS_INFO("received %d",data_available);
       data_available = 0;
 
       ros::spinOnce();
@@ -98,8 +109,7 @@ int main(int argc, char **argv)
 
     return 0;
   }
-  catch (boost::system::system_error ex)
-  {
+  catch (boost::system::system_error ex){
     ROS_ERROR("robot_driver: Error instantiating robot object. Are you sure you have the correct port and baud rate? Error was: %s", ex.what());
     return -1;
   }
