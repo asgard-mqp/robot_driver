@@ -1,5 +1,6 @@
 #include <ros/ros.h>
 #include <std_msgs/Float32.h>
+#include <std_msgs/Int16.h>
 #include <boost/asio.hpp>
 #include <boost/array.hpp>
 #include <boost/bind.hpp>
@@ -39,13 +40,13 @@ void wait_callback(boost::asio::serial_port& ser_port, const boost::system::erro
   ser_port.cancel();  // will cause read_callback to fire with an error
 }
 
-union Output {
+union Converter {
   int32_t full_data;     // occupies 4 bytes
   uint8_t bytes[4];     // occupies 4 byte
 };  
 
 void send_UART_msg(uint8_t system_ID, int data) {
-  Output out_data;
+  Converter out_data;
   out_data.full_data=data;
 
   uint8_t startByte = 0xFA;
@@ -66,7 +67,7 @@ void send_UART_msg(uint8_t system_ID, int data) {
   packet[6] = checksum;
 
   boost::asio::write(*serial_,  boost::asio::buffer(&packet[0], 7));
-  ROS_INFO("%02X:%02X:%02X:%02X:%02X:%02X:%02X",packet[0],packet[1],
+  ROS_INFO("OUT %02X:%02X:%02X:%02X:%02X:%02X:%02X",packet[0],packet[1],
     packet[2],packet[3],packet[4],packet[5],packet[6]);
 }
 inline const int linear_to_rotationalV(float meters_per_second){
@@ -102,18 +103,23 @@ int main(int argc, char **argv) {
   ros::Subscriber right_drive_sub = n.subscribe("rwheel_vtarget", 10, right_Drive_Callback);
   ros::Subscriber left_drive_sub = n.subscribe("lwheel_vtarget", 10, left_Drive_Callback);
 
+  ros::Publisher lwheel_pub = n.advertise<std_msgs::Int16>("lwheel", 100);
+  ros::Publisher rwheel_pub = n.advertise<std_msgs::Int16>("rwheel", 100);
+
   unsigned char my_buffer[1];
   bool data_available = false;
+
+  unsigned char packet[7];
 
   try {
     serial_ = new boost::asio::serial_port(io,port); // UART port for the Cortex
     serial_->set_option(boost::asio::serial_port_base::baud_rate(baud_rate));
 
     ROS_INFO("about to receive");
-
+    send_UART_msg(0x01,5);
     while (ros::ok()) {
      //ros::Time::now();
-     
+
       serial_->async_read_some(boost::asio::buffer(my_buffer),
         boost::bind(&read_callback, boost::ref(data_available), boost::ref(timeout),
           boost::asio::placeholders::error,
@@ -124,7 +130,33 @@ int main(int argc, char **argv) {
       io.run();
       io.reset();
 
-      //ROS_INFO("received %d",data_available);
+      if(data_available){
+        boost::asio::read(*serial_, boost::asio::buffer(&packet[1], 6));
+        ROS_INFO("IN %02X:%02X:%02X:%02X:%02X:%02X:%02X",packet[0],packet[1],
+          packet[2],packet[3],packet[4],packet[5],packet[6]);
+        
+        std_msgs::Int16 encoder_ticks;
+        Converter input;
+        for (int i=0; i<4;i++) {
+          input.bytes[i] = packet[i+2];
+        }
+        encoder_ticks.data = input.full_data;
+        switch(packet[1]){
+
+          case 0xf1://left
+            //read
+
+          lwheel_pub.publish(encoder_ticks);
+          break;
+          case 0xf2://right
+            //read
+          rwheel_pub.publish(encoder_ticks);
+          break;
+          default:
+          ROS_INFO("Invalid packet subsystem ID %02X",packet[1]);
+        }
+
+      }
       data_available = 0;
 
       ros::spinOnce();
@@ -134,6 +166,7 @@ int main(int argc, char **argv) {
     return 0;
   } catch (boost::system::system_error& ex) {
     ROS_ERROR("robot_driver: Error instantiating robot object. Are you sure you have the correct port and baud rate? Error was: %s", ex.what());
+
     return -1;
   }
 
