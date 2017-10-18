@@ -14,6 +14,9 @@
 //data 4 bytes
 //checksum
 
+constexpr float wheelRadius = 3.25;
+constexpr float inchToMeter = 0.0254;
+constexpr float PI = 3.1415926535897;
 boost::asio::serial_port* serial_;
 
 void read_callback(bool& data_available, boost::asio::deadline_timer& timeout, const boost::system::error_code& error, std::size_t bytes_transferred){
@@ -41,7 +44,7 @@ union Output {
   uint8_t bytes[4];     // occupies 4 byte
 };  
 
-void send_UART_msg(int data, uint8_t system_ID) {
+void send_UART_msg(uint8_t system_ID, int data) {
   Output out_data;
   out_data.full_data=data;
 
@@ -66,13 +69,19 @@ void send_UART_msg(int data, uint8_t system_ID) {
   ROS_INFO("%02X:%02X:%02X:%02X:%02X:%02X:%02X",packet[0],packet[1],
     packet[2],packet[3],packet[4],packet[5],packet[6]);
 }
-
+inline const int linear_to_rotationalV(float meters_per_second){
+  constexpr float circumference = wheelRadius * inchToMeter *PI;//diameter * conversion * pi
+  const float rps = meters_per_second/circumference;//rotations per second
+  return (rps * 60 *360);
+}
 void left_Drive_Callback(const std_msgs::Float32::ConstPtr& msg) {
-  send_UART_msg(1,0x01);
+  const int degree_per_minute = linear_to_rotationalV(msg->data);
+  send_UART_msg(0x01,degree_per_minute);
 }
 
 void right_Drive_Callback(const std_msgs::Float32::ConstPtr& msg) {
-  send_UART_msg(1,0x02);
+  const int degree_per_minute = linear_to_rotationalV(msg->data);
+  send_UART_msg(0x02,degree_per_minute);
 }
 
 int main(int argc, char **argv) {
