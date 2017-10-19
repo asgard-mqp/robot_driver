@@ -15,7 +15,7 @@
 //data 4 bytes
 //checksum
 
-constexpr float wheelRadius = 3.25;
+double wheelRadius;
 constexpr float inchToMeter = 0.0254;
 constexpr float PI = 3.1415926535897;
 boost::asio::serial_port* serial_;
@@ -71,7 +71,7 @@ void send_UART_msg(uint8_t system_ID, int data) {
     packet[2],packet[3],packet[4],packet[5],packet[6]);
 }
 inline const int linear_to_rotationalV(float meters_per_second){
-  constexpr float circumference = wheelRadius * inchToMeter *PI;//diameter * conversion * pi
+  float circumference = wheelRadius * inchToMeter *PI;//diameter * conversion * pi
   const float rps = meters_per_second/circumference;//rotations per second
   return (rps * 60 *360);
 }
@@ -95,6 +95,7 @@ int main(int argc, char **argv) {
   n.getParam("/robot_driver_node/port", port);
   n.getParam("/robot_driver_node/baud_rate", baud_rate);
   n.getParam("/robot_driver_node/frame_id", frame_id);
+  n.getParam("/robot_driver_node/wheel_radius", wheelRadius);
   ROS_INFO("Running with port: %s and baud rate: %d", port.c_str(), baud_rate);
 
   boost::asio::io_service io;
@@ -145,7 +146,6 @@ int main(int argc, char **argv) {
 
           case 0xf1://left
             //read
-
           lwheel_pub.publish(encoder_ticks);
           break;
           case 0xf2://right
