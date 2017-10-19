@@ -7,30 +7,22 @@
     <param name="wheel_radius" value="3.25" type="double"/>
   </node>
 
-  <node pkg="differential_drive" type="diff_tf" name="diff_tf" clear_params="true" output="screen">
-    <param name="rate" value="10" type="float" />  <!--The rate at which the tf and odom messages are published (Hz).-->
+  <node pkg="differential_drive" type="diff_tf.py" name="diff_tf" clear_params="true" output="screen">
+    <param name="rate" value="10" type="double" />  <!--The rate at which the tf and odom messages are published (Hz).-->
     <param name="ticks_meter" value="50" type="int" />
-    <param name="base_width" value="0.245" type="float" />  <!--The robot's wheel base in meters.-->
+    <param name="base_width" value="0.245" type="double" />  <!--The robot's wheel base in meters.-->
     <param name="base_frame_id" value="todo" type="string" /> <!--The name of the base frame of the robot.-->
     <param name="odom_frame_id" value="odom" type="string" /> <!--The name of the odometry reference frame.-->
     <param name="encoder_min" value="-32768" type="int" />  <!--min encoder value (for calculating wraparound)-->
     <param name="encoder_max" value="32768" type="int" />  <!--max encoder value (for calculating wraparound)-->
-    <param name="wheel_low_wrap" value="0.3 * (encoder_max - encoder_min) + encoder_min" type="int" />
-    <param name="wheel_high_wrap" value="0.7 * (encoder_max - encoder_min) + encoder_min" type="int" />
+   <!-- <param name="wheel_low_wrap" value="0.3 * (encoder_max - encoder_min) + encoder_min" type="int" />
+    <param name="wheel_high_wrap" value="0.7 * (encoder_max - encoder_min) + encoder_min" type="int" />-->
   </node>
 
-  <node pkg="differential_drive" type="twist_to_motors" name="twist_to_motors" clear_params="true" output="screen">
-    <param name="base_width" value="0.1" type="float" />  <!--The distance between the robot's wheels in meters.-->
+  <node pkg="differential_drive" type="twist_to_motors.py" name="twist_to_motors" clear_params="true" output="screen">
+    <param name="base_width" value="0.1" type="double" />  <!--The distance between the robot's wheels in meters.-->
     <param name="rate" value="50" type="int" />  <!--The rate velocity targets will be published (in Hertz).-->
     <param name="timeout_ticks" value="2" type="int" />  <!--The number of velocity target messages that will be published after the last twist message is recieved.--> 
-  </node>
-
-  <node pkg="differential_drive" type="virtual_joystick" name="virtual_joystick" clear_params="true" output="screen">
-    <param name="publish_rate" value="50" type="int" />  <!--The rate at which to publish the twist topic.-->
-    <param name="x_min" value="-1.50" type="float" />  <!--The minimum forward velocity to publish (in meters/second).-->
-    <param name="x_max" value="1.50" type="float" />  <!--The maximum forward velocity to publish (in meters/second).-->
-    <param name="r_min" value="10.0" type="float" />  <!--The minimum rotational velocity to publish (in rad/sec).-->
-    <param name="r_max" value="10.0" type="float" />  <!--The maximum rotational velocity to publish (in rad/sec).-->
   </node>
 
 </launch>
