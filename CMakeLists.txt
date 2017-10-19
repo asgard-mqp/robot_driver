@@ -183,11 +183,13 @@ add_executable(${PROJECT_NAME}_node src/robot_driver_node.cpp)
  )
 
 ## Mark other files for installation (e.g. launch and bag files, etc.)
-# install(FILES
-#   # myfile1
-#   # myfile2
-#   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
-# )
+ install(FILES
+    launch/driver.launch   
+    launch/move_base.launch
+# myfile1
+   # myfile2
+   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
+ )
 
 #############
 ## Testing ##
