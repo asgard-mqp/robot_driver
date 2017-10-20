@@ -74,12 +74,15 @@ void send_UART_msg(uint8_t system_ID, int data) {
 int linear_to_rotationalV(float meters_per_second){
   float circumference = wheelRadius * inchToMeter *PI;//diameter * conversion * pi
   const float rps = meters_per_second/circumference;//rotations per second
-  return (rps * 60 *360);
+const int send = rps*60*360;
+ ROS_INFO("rps  %1.4f, m/s %1.4f  send %d",rps,meters_per_second,send);
+
+  return (send);
 }
 
 void left_Drive_Callback(const std_msgs::Float32::ConstPtr& msg) {
   const int degree_per_minute = linear_to_rotationalV(msg->data);
-  send_UART_msg(0x01,degree_per_minute);
+  send_UART_msg(0x01, degree_per_minute);
 }
 
 void right_Drive_Callback(const std_msgs::Float32::ConstPtr& msg) {
@@ -99,7 +102,7 @@ int main(int argc, char **argv) {
   n.getParam("/robot_driver_node/frame_id", frame_id);
   n.getParam("/robot_driver_node/wheel_radius", wheelRadius);
   ROS_INFO("Running with port: %s and baud rate: %d", port.c_str(), baud_rate);
-
+  ROS_INFO("wheel radius %1.2f, inchToMeter %1.5f ,  PI  %1.4f",wheelRadius,inchToMeter,PI);
   boost::asio::io_service io;
   boost::asio::deadline_timer timeout(io);
 
@@ -119,7 +122,6 @@ int main(int argc, char **argv) {
     serial_->set_option(boost::asio::serial_port_base::baud_rate(baud_rate));
 
     ROS_INFO("about to receive");
-    send_UART_msg(0x01,5);
     while (ros::ok()) {
      //ros::Time::now();
 
@@ -137,7 +139,7 @@ int main(int argc, char **argv) {
         boost::asio::read(*serial_, boost::asio::buffer(&packet[1], 6));
         ROS_INFO("IN %02X:%02X:%02X:%02X:%02X:%02X:%02X",packet[0],packet[1],
           packet[2],packet[3],packet[4],packet[5],packet[6]);
-        
+
         std_msgs::Int16 encoder_ticks;
         Converter input;
         for (int i=0; i<4;i++) {
