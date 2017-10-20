@@ -70,11 +70,13 @@ void send_UART_msg(uint8_t system_ID, int data) {
   ROS_INFO("OUT %02X:%02X:%02X:%02X:%02X:%02X:%02X",packet[0],packet[1],
     packet[2],packet[3],packet[4],packet[5],packet[6]);
 }
-inline const int linear_to_rotationalV(float meters_per_second){
+
+int linear_to_rotationalV(float meters_per_second){
   float circumference = wheelRadius * inchToMeter *PI;//diameter * conversion * pi
   const float rps = meters_per_second/circumference;//rotations per second
   return (rps * 60 *360);
 }
+
 void left_Drive_Callback(const std_msgs::Float32::ConstPtr& msg) {
   const int degree_per_minute = linear_to_rotationalV(msg->data);
   send_UART_msg(0x01,degree_per_minute);
