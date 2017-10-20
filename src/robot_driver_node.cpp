@@ -111,15 +111,6 @@ int main(int argc, char **argv) {
   bool data_available = false;
 
   unsigned char packet[7];
-  std_msgs::Int16 encoder_ticks;
-  encoder_ticks.data =0;
-  while (ros::ok()) {
-
-  lwheel_pub.publish(encoder_ticks);
-  rwheel_pub.publish(encoder_ticks);
-  ros::spinOnce();
-
-}
 
   try {
     serial_ = new boost::asio::serial_port(io,port); // UART port for the Cortex
