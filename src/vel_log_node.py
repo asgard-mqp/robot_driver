@@ -19,34 +19,72 @@ last_recieved_data = 0 # the rospy Time when data was last received
 lwheel = []
 rwheel = []
 
+demaS = 0
+demaB = 0
+demaLastS = 0
+demaLastB = 0
+
+alpha = 0.19
+beta = 0.041
+
+def demaInit():
+    global demaS
+    global demaB
+    global demaLastS
+    global demaLastB
+    demaS = 0
+    demaB = 0
+    demaLastS = 0
+    demaLastB = 0
+
+def demaFilter(val):
+    global demaS
+    global demaB
+    global demaLastS
+    global demaLastB
+    demaS = (alpha * val) + ((1 - alpha) * (demaLastS + demaLastB))
+    demaB = (beta * (demaS - demaLastS)) + ((1 - beta) * demaLastB)
+    demaLastS = demaS
+    demaLastB = demaB
+    return demaS + demaB
+
 def left_callback(data):
     global lwheel
+    global last_recieved_data
     last_recieved_data = rospy.Time.now()
-    rospy.loginfo(rospy.get_caller_id() + 'right: %s', data.data)
+    #rospy.loginfo(rospy.get_caller_id() + 'right: %s', data.data)
     lwheel.append(data.data)
 
 def right_callback(data):
     global rwheel
+    global last_recieved_data
     last_recieved_data = rospy.Time.now()
-    rospy.loginfo(rospy.get_caller_id() + 'left: %s', data.data)
-    rwheel.append(data.data)
+    #rospy.loginfo(rospy.get_caller_id() + 'left: %s', data.data)
+    rwheel.append(-1 * data.data)
 
 # from a list of ticks 15ms apart, returns a list of "instantaneous" velocities
 def velocities(ticks):
     ticks_in_meter = 1390
     ms_between_ticks = 15
     diff_ticks = numpy.diff(ticks)
-    meters_traveled = [diff_ticks/ticks_in_meter for tick in diff_ticks]
-    return [((meters_traveled*1000)/ms_between_ticks) for meters_traveled in meters_traveled]
+    meters_traveled = [tick/ticks_in_meter for tick in diff_ticks]
+    raw_vel = [(dist*1000)/ms_between_ticks for dist in meters_traveled]
+    demaInit()
+    return [demaFilter(a) for a in raw_vel]
 
 # from a list of velocity values 15ms apart, returns a list of "instantaneous" accelerations
 def accelerations(velocities):
-    ms_between_values = 15
-    return [(velocity*1000)/ms_between_values for velocity in velocities]
+    ms_between_ticks = 15
+    diff_vel = numpy.diff(velocities)
+    raw_acc = [(vel*1000)/ms_between_ticks for vel in diff_vel]
+    demaInit()
+    return [demaFilter(a) for a in raw_acc]
 
 def listener():
     global lwheel
     global rwheel
+    global last_recieved_data
+    numpy.set_printoptions(threshold=numpy.nan)
     rospy.init_node('vel_log', anonymous=True)
     rospy.Subscriber('lwheel', Int16, left_callback)
     rospy.Subscriber('rwheel', Int16, right_callback)
@@ -59,22 +97,25 @@ def listener():
          rospy.sleep(rospy.Duration(1, 0))
 
     # plot raw encoder ticks over time
-    plot.plot(lwheel)
-    plot.plot(rwheel)
-    plot.show()
-
+    #plot.plot(lwheel, label="Left pos")
+    #plot.plot(rwheel, label="Right pos")
+    
     # plot velocity between intervals over time
     lvels = velocities(lwheel)
     rvels = velocities(rwheel)
-    plot.plot(lvels)
-    plot.plot(rvels)
-    plot.show()
-
+    plot.plot(lvels, label="Left vel")
+    plot.plot(rvels, label="Right vel")
+    
     # plot acceleration between intervals over time
     lacc = accelerations(lvels)
     racc = accelerations(rvels)
-    plot.plot(lacc)
-    plot.plot(racc)
+    plot.plot(lacc, label="Left acc")
+    plot.plot(racc, label="Right acc")
+
+    print("Left vel max: ", max(lvels), ", Right vel max: ", max(rvels))
+    print("Left acc max: ", max(lacc), ", Right acc max: ", max(racc))
+
+    plot.legend()
     plot.show()
 
 if __name__ == '__main__':
