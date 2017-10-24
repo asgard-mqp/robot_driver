@@ -64,19 +64,19 @@ def right_callback(data):
 
 # from a list of ticks 15ms apart, returns a list of "instantaneous" velocities
 def velocities(ticks):
-    ticks_in_meter = 1390
-    ms_between_ticks = 15
+    ticks_in_meter = 1390.0
+    ms_between_ticks = 15.0
     diff_ticks = numpy.diff(ticks)
     meters_traveled = [tick/ticks_in_meter for tick in diff_ticks]
-    raw_vel = [(dist*1000)/ms_between_ticks for dist in meters_traveled]
+    raw_vel = [(dist*1000.0)/ms_between_ticks for dist in meters_traveled]
     demaInit()
     return [demaFilter(a) for a in raw_vel]
 
 # from a list of velocity values 15ms apart, returns a list of "instantaneous" accelerations
 def accelerations(velocities):
-    ms_between_ticks = 15
+    ms_between_ticks = 15.0
     diff_vel = numpy.diff(velocities)
-    raw_acc = [(vel*1000)/ms_between_ticks for vel in diff_vel]
+    raw_acc = [(vel*1000.0)/ms_between_ticks for vel in diff_vel]
     demaInit()
     return [demaFilter(a) for a in raw_acc]
 
@@ -103,14 +103,27 @@ def listener():
     # plot velocity between intervals over time
     lvels = velocities(lwheel)
     rvels = velocities(rwheel)
-    plot.plot(lvels, label="Left vel")
-    plot.plot(rvels, label="Right vel")
+    LVeltime = numpy.arange(0.0, 15.0*(len(lvels))/1000, 0.015)
+    RVeltime = numpy.arange(0.0, 15.0*(len(rvels))/1000, 0.015)
+
+
+
+    plot.plot(LVeltime,lvels, label="Left vel")
+    plot.plot(RVeltime,rvels, label="Right vel")
     
     # plot acceleration between intervals over time
     lacc = accelerations(lvels)
     racc = accelerations(rvels)
-    plot.plot(lacc, label="Left acc")
-    plot.plot(racc, label="Right acc")
+    LAcctime = numpy.arange(0.0149, 15.0*(len(lacc))/1000.0, 0.015)
+    RAcctime = numpy.arange(0.0, 15.0*(len(racc))/1000.0, 0.015)
+    print(RAcctime.size)
+    print(len(racc))
+    
+
+    print(LAcctime.size)
+    print(len(lacc))
+    plot.plot(LAcctime,lacc, label="Left acc")
+    plot.plot(RAcctime,racc, label="Right acc")
 
     print("Left vel max: ", max(lvels), ", Right vel max: ", max(rvels))
     print("Left acc max: ", max(lacc), ", Right acc max: ", max(racc))
