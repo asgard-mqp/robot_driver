@@ -1,13 +1,13 @@
 <launch>
   <master auto="start"/>
-  <include file="$(find robot_driver)/launch/driver.launch"/>
+  <include file="$(find robot_driver)/driver.launch"/>
 
   <node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen">
-    <rosparam file="$(find robot_driver)/launch/costmap_common_params.yaml" command="load" ns="global_costmap" />
-    <rosparam file="$(find robot_driver)/launch/costmap_common_params.yaml" command="load" ns="local_costmap" />
-    <rosparam file="$(find robot_driver)/launch/local_costmap_params.yaml" command="load" />
-    <rosparam file="$(find robot_driver)/launch/global_costmap_params.yaml" command="load" />
-    <rosparam file="$(find robot_driver)/launch/base_local_planner_params.yaml" command="load" />
+    <rosparam file="$(find robot_driver)/costmap-common-params.yaml" command="load" ns="global_costmap" />
+    <rosparam file="$(find robot_driver)/costmap-common-params.yaml" command="load" ns="local_costmap" />
+    <rosparam file="$(find robot_driver)/local_costmap_params.yaml" command="load" />
+    <rosparam file="$(find robot_driver)/global_costmap_params.yaml" command="load" />
+    <rosparam file="$(find robot_driver)/base_local_planner_params.yaml" command="load" />
   </node>
 </launch>
 
