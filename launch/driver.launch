@@ -21,7 +21,6 @@
   </node>
 
   <node pkg="differential_drive" type="twist_to_motors.py" name="twist_to_motors" clear_params="true" output="screen">
-<remap from="twist" to="cmd_vel_mux/input/teleop"/>  
   <param name="base_width" value="0.1" type="double" />  <!--The distance between the robot's wheels in meters.-->
     <param name="rate" value="50" type="int" />  <!--The rate velocity targets will be published (in Hertz).-->
     <param name="timeout_ticks" value="2" type="int" />  <!--The number of velocity target messages that will be published after the last twist message is recieved.--> 
