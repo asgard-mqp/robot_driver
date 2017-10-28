@@ -188,6 +188,7 @@ add_executable(${PROJECT_NAME}_node src/robot_driver_node.cpp)
     launch/move_base.launch
     launch/base_local_planner_params.yaml
     launch/costmap-common-params.yaml
+    launch/costmap_common_params.yaml
     launch/global_costmap_params.yaml
     launch/local_costmap_params.yaml
     launch/base_local_planner_params.yaml
