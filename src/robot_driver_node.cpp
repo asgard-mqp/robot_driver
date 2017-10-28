@@ -137,8 +137,8 @@ int main(int argc, char **argv) {
 
       if(data_available){
         boost::asio::read(*serial_, boost::asio::buffer(&packet[1], 6));
-        ROS_INFO("IN %02X:%02X:%02X:%02X:%02X:%02X:%02X",packet[0],packet[1],
-          packet[2],packet[3],packet[4],packet[5],packet[6]);
+        //ROS_INFO("IN %02X:%02X:%02X:%02X:%02X:%02X:%02X",packet[0],packet[1],
+        // packet[2],packet[3],packet[4],packet[5],packet[6]);
 
         std_msgs::Int16 encoder_ticks;
         Converter input;
