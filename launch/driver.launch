@@ -13,7 +13,7 @@
     <param name="ticks_meter" value="1244" type="int" />
     <param name="base_width" value="0.1238" type="double" />  <!--The robot's wheel base in meters.-->
     <param name="base_frame_id" value="base_link" type="string" /> <!--The name of the base frame of the robot.-->
-    <param name="odom_frame_id" value="odom" type="string" /> <!--The name of the odometry reference frame.-->
+    <param name="odom_frame_id" value="odom_wrong" type="string" /> <!--The name of the odometry reference frame.-->
     <param name="encoder_min" value="-32768" type="int" />  <!--min encoder value (for calculating wraparound)-->
     <param name="encoder_max" value="32768" type="int" />  <!--max encoder value (for calculating wraparound)-->
    <!-- <param name="wheel_low_wrap" value="0.3 * (encoder_max - encoder_min) + encoder_min" type="int" />
