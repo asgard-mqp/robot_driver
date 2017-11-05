@@ -74,10 +74,25 @@ void send_UART_msg(uint8_t system_ID, int data) {
 int linear_to_rotationalV(float meters_per_second){
   float circumference = wheelRadius * inchToMeter *PI;//diameter * conversion * pi
   const float rps = meters_per_second/circumference;//rotations per second
-const int send = rps*60*360;
- ROS_INFO("rps  %1.4f, m/s %1.4f  send %d",rps,meters_per_second,send);
+  const int send = rps*60*360;
+  ROS_INFO("rps  %1.4f, m/s %1.4f  send %d",rps,meters_per_second,send);
 
   return (send);
+}
+void kp_Callback(const std_msgs::Float32::ConstPtr& msg) {
+  const int new_const = msg->data *65536;
+  ROS_INFO("kp %f",msg->data);
+  send_UART_msg(0x16, new_const);
+}
+void ki_Callback(const std_msgs::Float32::ConstPtr& msg) {
+  const int new_const = msg->data *65536;
+  ROS_INFO("ki %f",msg->data);
+  send_UART_msg(0x17, new_const);
+}
+void kd_Callback(const std_msgs::Float32::ConstPtr& msg) {
+  const int new_const = msg->data *65536;
+  ROS_INFO("kd %f",msg->data);
+  send_UART_msg(0x18, new_const);
 }
 
 void left_Drive_Callback(const std_msgs::Float32::ConstPtr& msg) {
@@ -108,6 +123,13 @@ int main(int argc, char **argv) {
 
   ros::Subscriber right_drive_sub = n.subscribe("rwheel_vtarget", 10, right_Drive_Callback);
   ros::Subscriber left_drive_sub = n.subscribe("lwheel_vtarget", 10, left_Drive_Callback);
+
+  ros::Subscriber kp_sub = n.subscribe("kp", 10, kp_Callback);
+  ros::Subscriber ki_sub = n.subscribe("ki", 10, ki_Callback);
+  ros::Subscriber kd_sub = n.subscribe("kd", 10, kd_Callback);
+
+
+
 
   ros::Publisher lwheel_pub = n.advertise<std_msgs::Int16>("lwheel", 100);
   ros::Publisher rwheel_pub = n.advertise<std_msgs::Int16>("rwheel", 100);
