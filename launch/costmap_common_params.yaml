@@ -22,7 +22,7 @@ obstacle_layer:
   z_resolution: 0.2
   z_voxels: 2
   publish_voxel_map: false
-  observation_sources:  scan bump
+  observation_sources:  scan   
   scan:
     data_type: LaserScan
     topic: scan
@@ -33,11 +33,12 @@ obstacle_layer:
 
 #cost_scaling_factor and inflation_radius were now moved to the inflation_layer ns
 inflation_layer:
-  enabled:              true
-  cost_scaling_factor:  5.0  # exponential rate at which the obstacle cost drops off (default: 10)
-  inflation_radius:     0.5  # max. distance from an obstacle at which costs are incurred for planning paths.
+  enabled:               true
+  cost_scaling_factor:   5.0  # exponential rate at which the obstacle cost drops off (default: 10)
+  inflation_radius:      0.5  # max. distance from an obstacle at which costs are incurred for planning paths.
 
 static_layer:
-  enabled:              true
+  enabled:               true
+  lethal_cost_threshold: 50
 
 
