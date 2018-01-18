@@ -23,9 +23,11 @@ boost::asio::serial_port* serial_;
 void read_callback(bool& data_available, boost::asio::deadline_timer& timeout, const boost::system::error_code& error, std::size_t bytes_transferred){
   if (error || !bytes_transferred) {
     // No data was read!
+
     data_available = false;
     return;
   }
+  ROS_INFO("Data");
 
   timeout.cancel();  // will cause wait_callback to fire with an error
   data_available = true;
@@ -34,6 +36,7 @@ void read_callback(bool& data_available, boost::asio::deadline_timer& timeout, c
 void wait_callback(boost::asio::serial_port& ser_port, const boost::system::error_code& error){
   if (error){
     // Data was read and this timeout was canceled
+    ROS_INFO("no data");
     return;
   }
 
@@ -67,15 +70,15 @@ void send_UART_msg(uint8_t system_ID, int data) {
   packet[6] = checksum;
 
   boost::asio::write(*serial_,  boost::asio::buffer(&packet[0], 7));
-  ROS_INFO("OUT %02X:%02X:%02X:%02X:%02X:%02X:%02X",packet[0],packet[1],
-    packet[2],packet[3],packet[4],packet[5],packet[6]);
+  /*ROS_INFO("OUT %02X:%02X:%02X:%02X:%02X:%02X:%02X",packet[0],packet[1],
+    packet[2],packet[3],packet[4],packet[5],packet[6]);*/
 }
 
 int linear_to_rotationalV(float meters_per_second){
   float circumference = wheelRadius * inchToMeter *PI;//diameter * conversion * pi
   const float rps = meters_per_second/circumference;//rotations per second
   const int send = rps*60*360;
-  ROS_INFO("rps  %1.4f, m/s %1.4f  send %d",rps,meters_per_second,send);
+  //ROS_INFO("rps  %1.4f, m/s %1.4f  send %d",rps,meters_per_second,send);
 
   return (send);
 }
@@ -156,12 +159,13 @@ int main(int argc, char **argv) {
         boost::asio::placeholders::error));
       io.run();
       io.reset();
+      ROS_INFO("started");
 
       if(data_available){
         boost::asio::read(*serial_, boost::asio::buffer(&packet[1], 6));
-        //ROS_INFO("IN %02X:%02X:%02X:%02X:%02X:%02X:%02X",packet[0],packet[1],
-        // packet[2],packet[3],packet[4],packet[5],packet[6]);
-
+        ROS_INFO("IN %02X:%02X:%02X:%02X:%02X:%02X:%02X",packet[0],packet[1],
+         packet[2],packet[3],packet[4],packet[5],packet[6]);
+        ROS_INFO("Start %02X",my_buffer[0]);
         std_msgs::Int16 encoder_ticks;
         Converter input;
         for (int i=0; i<4;i++) {
@@ -173,6 +177,7 @@ int main(int argc, char **argv) {
           case 0xf1://left
             //read
           lwheel_pub.publish(encoder_ticks);
+          ROS_INFO("lwheel");
           break;
           case 0xf2://right
             //read
