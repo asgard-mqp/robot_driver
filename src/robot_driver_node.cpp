@@ -36,9 +36,9 @@ void read_callback(bool& data_available, boost::asio::deadline_timer& timeout, c
 void wait_callback(boost::asio::serial_port& ser_port, const boost::system::error_code& error){
   if (error){
     // Data was read and this timeout was canceled
-    ROS_INFO("no data");
     return;
   }
+  ROS_INFO("no data");
 
   ser_port.cancel();  // will cause read_callback to fire with an error
 }
@@ -160,8 +160,12 @@ int main(int argc, char **argv) {
       io.run();
       io.reset();
       ROS_INFO("started");
-
+      if(my_buffer[0] != 0xFA){
+        ROS_INFO("wrong startByte  %02x",startByte);
+        data_available = false; // I lied no data available
+      }
       if(data_available){
+        packet[0] = my_buffer[0];
         boost::asio::read(*serial_, boost::asio::buffer(&packet[1], 6));
         ROS_INFO("IN %02X:%02X:%02X:%02X:%02X:%02X:%02X",packet[0],packet[1],
          packet[2],packet[3],packet[4],packet[5],packet[6]);
