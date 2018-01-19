@@ -161,7 +161,7 @@ int main(int argc, char **argv) {
       io.reset();
       ROS_INFO("started");
       if(my_buffer[0] != 0xFA){
-        ROS_INFO("wrong startByte  %02x",startByte);
+        ROS_INFO("wrong startByte  %02x",my_buffer[0]);
         data_available = false; // I lied no data available
       }
       if(data_available){
