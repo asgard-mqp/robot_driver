@@ -1,6 +1,7 @@
 #include <ros/ros.h>
 #include <std_msgs/Float32.h>
 #include <std_msgs/Int16.h>
+#include <std_msgs/Bool.h>
 #include <boost/asio.hpp>
 #include <boost/array.hpp>
 #include <boost/bind.hpp>
@@ -98,6 +99,7 @@ void kd_Callback(const std_msgs::Float32::ConstPtr& msg) {
   send_UART_msg(0x18, new_const);
 }
 
+
 void left_Drive_Callback(const std_msgs::Float32::ConstPtr& msg) {
   const int degree_per_minute = linear_to_rotationalV(msg->data);
   send_UART_msg(0x01, degree_per_minute);
@@ -106,6 +108,11 @@ void left_Drive_Callback(const std_msgs::Float32::ConstPtr& msg) {
 void right_Drive_Callback(const std_msgs::Float32::ConstPtr& msg) {
   const int degree_per_minute = linear_to_rotationalV(msg->data);
   send_UART_msg(0x02,degree_per_minute);
+}
+void arm_goal_Callback(const std_msgs::Bool::ConstPtr& msg) {
+  const int new_const = msg->data?1:0;
+  ROS_INFO("kd %f",msg->data);
+  send_UART_msg(0x03, new_const);
 }
 
 int main(int argc, char **argv) {
@@ -130,12 +137,15 @@ int main(int argc, char **argv) {
   ros::Subscriber kp_sub = n.subscribe("kp", 10, kp_Callback);
   ros::Subscriber ki_sub = n.subscribe("ki", 10, ki_Callback);
   ros::Subscriber kd_sub = n.subscribe("kd", 10, kd_Callback);
+  ros::Subscriber arm_goal_sub = n.subscribe("arm_goal", 10, arm_goal_Callback);
 
 
 
 
   ros::Publisher lwheel_pub = n.advertise<std_msgs::Int16>("lwheel", 100);
   ros::Publisher rwheel_pub = n.advertise<std_msgs::Int16>("rwheel", 100);
+  ros::Publisher arm_state_pub = n.advertise<std_msgs::Int16>("arm_state", 100);
+
 
   unsigned char my_buffer[1];
   bool data_available = false;
@@ -186,6 +196,10 @@ int main(int argc, char **argv) {
           case 0xf2://right
             //read
           rwheel_pub.publish(encoder_ticks);
+          break;
+          case 0xf3://arm
+            //read
+          arm_state_pub.publish(encoder_ticks); //really is the arm state not encoder pos
           break;
           default:
           ROS_INFO("Invalid packet subsystem ID %02X",packet[1]);
