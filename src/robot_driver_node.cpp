@@ -17,6 +17,8 @@
 //checksum
 
 double wheelRadius;
+int gearRatioNumerator;
+int gearRatioDenominator;
 constexpr float inchToMeter = 0.0254;
 constexpr float PI = 3.1415926535897;
 boost::asio::serial_port* serial_;
@@ -39,7 +41,7 @@ void wait_callback(boost::asio::serial_port& ser_port, const boost::system::erro
     // Data was read and this timeout was canceled
     return;
   }
-  ROS_INFO("no data");
+//  ROS_INFO("no data");
 
   ser_port.cancel();  // will cause read_callback to fire with an error
 }
@@ -77,7 +79,7 @@ void send_UART_msg(uint8_t system_ID, int data) {
 
 int linear_to_rotationalV(float meters_per_second){
   float circumference = wheelRadius * inchToMeter *PI;//diameter * conversion * pi
-  const float rps = meters_per_second/circumference;//rotations per second
+  const float rps = gearRatioDenominator*(meters_per_second/circumference)/gearRatioNumerator;//rotations per second
   const int send = rps*60*360;
   //ROS_INFO("rps  %1.4f, m/s %1.4f  send %d",rps,meters_per_second,send);
 
@@ -126,7 +128,11 @@ int main(int argc, char **argv) {
   n.getParam("/robot_driver_node/baud_rate", baud_rate);
   n.getParam("/robot_driver_node/frame_id", frame_id);
   n.getParam("/robot_driver_node/wheel_radius", wheelRadius);
+  n.getParam("/robot_driver_node/gear_Ratio_Numerator",gearRatioNumerator);
+  n.getParam("/robot_driver_node/gear_Ratio_Denominator",gearRatioDenominator);
+
   ROS_INFO("Running with port: %s and baud rate: %d", port.c_str(), baud_rate);
+  ROS_INFO("Gear ratio  %d / %d", gearRatioNumerator, gearRatioDenominator);
   ROS_INFO("wheel radius %1.2f, inchToMeter %1.5f ,  PI  %1.4f",wheelRadius,inchToMeter,PI);
   boost::asio::io_service io;
   boost::asio::deadline_timer timeout(io);
@@ -169,7 +175,7 @@ int main(int argc, char **argv) {
         boost::asio::placeholders::error));
       io.run();
       io.reset();
-      ROS_INFO("started");
+  //    ROS_INFO("started");
       if(data_available && my_buffer[0] != 0xFA){
         ROS_INFO("wrong startByte  %02x",my_buffer[0]);
         data_available = false; // I lied no data available
