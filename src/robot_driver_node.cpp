@@ -30,7 +30,7 @@ void read_callback(bool& data_available, boost::asio::deadline_timer& timeout, c
     data_available = false;
     return;
   }
-  ROS_INFO("Data");
+//  ROS_INFO("Data");
 
   timeout.cancel();  // will cause wait_callback to fire with an error
   data_available = true;
@@ -105,11 +105,13 @@ void kd_Callback(const std_msgs::Float32::ConstPtr& msg) {
 void left_Drive_Callback(const std_msgs::Float32::ConstPtr& msg) {
   const int degree_per_minute = linear_to_rotationalV(msg->data);
   send_UART_msg(0x01, degree_per_minute);
+  ROS_INFO("send left %d",degree_per_minute/360);
 }
 
 void right_Drive_Callback(const std_msgs::Float32::ConstPtr& msg) {
   const int degree_per_minute = linear_to_rotationalV(msg->data);
   send_UART_msg(0x02,degree_per_minute);
+  ROS_INFO("send right %d",degree_per_minute/360);
 }
 void arm_goal_Callback(const std_msgs::Bool::ConstPtr& msg) {
   const int new_const = msg->data?1:0;
@@ -183,9 +185,9 @@ int main(int argc, char **argv) {
       if(data_available){
         packet[0] = my_buffer[0];
         boost::asio::read(*serial_, boost::asio::buffer(&packet[1], 6));
-        ROS_INFO("IN %02X:%02X:%02X:%02X:%02X:%02X:%02X",packet[0],packet[1],
-         packet[2],packet[3],packet[4],packet[5],packet[6]);
-        ROS_INFO("Start %02X",my_buffer[0]);
+//        ROS_INFO("IN %02X:%02X:%02X:%02X:%02X:%02X:%02X",packet[0],packet[1],
+//         packet[2],packet[3],packet[4],packet[5],packet[6]);
+//        ROS_INFO("Start %02X",my_buffer[0]);
         std_msgs::Int16 encoder_ticks;
         Converter input;
         for (int i=0; i<4;i++) {
@@ -197,7 +199,7 @@ int main(int argc, char **argv) {
           case 0xf1://left
             //read
           lwheel_pub.publish(encoder_ticks);
-          ROS_INFO("lwheel");
+ //         ROS_INFO("lwheel");
           break;
           case 0xf2://right
             //read

@@ -24,7 +24,7 @@
   <remap from="/twist" to="/cmd_vel"/>
   <param name="base_width" value="0.33" type="double" />  <!--The distance between the robot's wheels in meters.-->
     <param name="rate" value="50" type="int" />  <!--The rate velocity targets will be published (in Hertz).-->
-    <param name="timeout_ticks" value="2" type="int" />  <!--The number of velocity target messages that will be published after the last twist message is recieved.--> 
+    <param name="timeout_ticks" value="1" type="int" />  <!--The number of velocity target messages that will be published after the last twist message is recieved.--> 
   </node>
 
 </launch>
