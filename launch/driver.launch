@@ -4,7 +4,7 @@
     <param name="port" value="/dev/ttyACM1" type="str" />
     <param name="baud_rate" value="921600" type="int" />
     <param name="frame_id" value="base_link" type="str" />
-    <param name="wheel_radius" value="4" type="double"/>
+    <param name="wheel_radius" value="4.125" type="double"/>
     <param name="gear_Ratio_Numerator" value="68" type="int" />
     <param name="gear_Ratio_Denominator " value="52" type="int" />
   </node>
