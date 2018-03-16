@@ -172,7 +172,7 @@ int main(int argc, char **argv) {
         boost::bind(&read_callback, boost::ref(data_available), boost::ref(timeout),
           boost::asio::placeholders::error,
           boost::asio::placeholders::bytes_transferred));
-      timeout.expires_from_now(boost::posix_time::milliseconds(5)); //5 ms timeout
+      timeout.expires_from_now(boost::posix_time::milliseconds(1)); //5 ms timeout
       timeout.async_wait(boost::bind(&wait_callback, boost::ref(*serial_),
         boost::asio::placeholders::error));
       io.run();
