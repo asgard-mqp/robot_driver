@@ -186,8 +186,7 @@ add_executable(${PROJECT_NAME}_node src/robot_driver_node.cpp)
  install(FILES
     launch/driver.launch   
     launch/move_base.launch
-    launch/base_local_planner_params.yaml
-    launch/costmap-common-params.yaml
+    launch/teb_local_planner_params.yaml
     launch/costmap_common_params.yaml
     launch/global_costmap_params.yaml
     launch/local_costmap_params.yaml
