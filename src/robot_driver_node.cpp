@@ -105,13 +105,13 @@ void kd_Callback(const std_msgs::Float32::ConstPtr& msg) {
 void left_Drive_Callback(const std_msgs::Float32::ConstPtr& msg) {
   const int degree_per_minute = linear_to_rotationalV(msg->data);
   send_UART_msg(0x01, degree_per_minute);
-  ROS_INFO("send left %d",degree_per_minute/360);
+  // ROS_INFO("send left %d",degree_per_minute/360);
 }
 
 void right_Drive_Callback(const std_msgs::Float32::ConstPtr& msg) {
   const int degree_per_minute = linear_to_rotationalV(msg->data);
   send_UART_msg(0x02,degree_per_minute);
-  ROS_INFO("send right %d",degree_per_minute/360);
+  // ROS_INFO("send right %d",degree_per_minute/360);
 }
 void arm_goal_Callback(const std_msgs::Bool::ConstPtr& msg) {
   const int new_const = msg->data?1:0;
